@@ -1,8 +1,15 @@
-<script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-import { getDatabase, ref, set, onValue, onDisconnect } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+import {
+  getDatabase,
+  ref,
+  set,
+  onValue,
+  onDisconnect
+} from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
-let myPlayer = null;
+/* =========================
+   FIREBASE
+========================= */
 
 const firebaseConfig = {
   apiKey: "AIzaSyBuz-kqBL6zEQfGWJpKHdm7y73ki8EBpx0",
@@ -21,6 +28,8 @@ const db = getDatabase(app);
    PLAYER SLOT
 ========================= */
 
+let myPlayer = null;
+
 const playerRef = ref(db, "players");
 
 onValue(playerRef, (snap) => {
@@ -32,7 +41,6 @@ onValue(playerRef, (snap) => {
   if (!players.red) {
 
     myPlayer = "red";
-
     const myRef = ref(db, "players/red");
     set(myRef, true);
     onDisconnect(myRef).remove();
@@ -40,7 +48,6 @@ onValue(playerRef, (snap) => {
   } else if (!players.black) {
 
     myPlayer = "black";
-
     const myRef = ref(db, "players/black");
     set(myRef, true);
     onDisconnect(myRef).remove();
@@ -51,6 +58,7 @@ onValue(playerRef, (snap) => {
 
   }
 
+  updateTurnText();
 });
 
 /* =========================
@@ -58,33 +66,50 @@ onValue(playerRef, (snap) => {
 ========================= */
 
 const boardEl = document.getElementById("board");
-const timerRedEl = document.getElementById("timer-red");
-const timerBlackEl = document.getElementById("timer-black");
+const timerRedEl = document.getElementById("timer-red");     // Azul
+const timerBlackEl = document.getElementById("timer-black"); // Branco
 const turnText = document.getElementById("turnText");
 const countdownEl = document.getElementById("countdown");
 
 const victoryScreen = document.getElementById("victoryScreen");
 const victoryTitle = document.getElementById("victoryTitle");
 const victoryReason = document.getElementById("victoryReason");
+const restartBtn = document.getElementById("restartBtn");
+
+/* =========================
+   ESTADO
+========================= */
 
 let board = [];
 let currentPlayer = "red";
+
 let selected = null;
 let mustCaptureGlobal = false;
 let comboActive = false;
 let mandatorySequences = null;
 
-/* =========================
-   TEMPO
-========================= */
-
-let timeRed = 180;
-let timeBlack = 180;
+let timeRed = 180;     // Azul
+let timeBlack = 180;   // Branco
 let timerInterval = null;
 let gameStarted = false;
 
 /* =========================
-   INICIAR JOGO
+   START
+========================= */
+
+restartBtn.addEventListener("click", () => {
+  if (myPlayer === "red") {
+    startNewGameAndSave();
+  }
+});
+
+function startNewGameAndSave() {
+  startGame();
+  saveGameState();
+}
+
+/* =========================
+   INICIAR JOGO LOCAL
 ========================= */
 
 function startGame() {
@@ -95,8 +120,8 @@ function startGame() {
   boardEl.innerHTML = "";
   selected = null;
   comboActive = false;
-  currentPlayer = "red";
   mandatorySequences = null;
+  currentPlayer = "red";
 
   timeRed = 180;
   timeBlack = 180;
@@ -104,7 +129,21 @@ function startGame() {
 
   gameStarted = false;
   countdownEl.style.display = "flex";
+
+  buildInitialBoard();
   startCountdown();
+
+  updateMandatorySequences();
+  highlightPlayablePieces();
+}
+
+/* =========================
+   TABULEIRO INICIAL
+========================= */
+
+function buildInitialBoard() {
+
+  board = [];
 
   for (let r = 0; r < 8; r++) {
 
@@ -148,9 +187,6 @@ function startGame() {
 
     board.push(row);
   }
-
-  updateMandatorySequences();
-  highlightPlayablePieces();
 }
 
 /* =========================
@@ -215,7 +251,7 @@ function updateTimers() {
 
 function formatTime(t) {
   const m = String(Math.floor(t / 60)).padStart(2, "0");
-  const s = String(t % 60).padStart(2, "0");
+  const s = String(t % 60)).padStart(2, "0");
   return `${m}:${s}`;
 }
 
@@ -228,11 +264,8 @@ function endGame(winner, reason) {
   clearInterval(timerInterval);
   gameStarted = false;
 
-  if (winner === "red") {
-    victoryTitle.textContent = "🔵 Azul venceu!";
-  } else {
-    victoryTitle.textContent = "⚪ Branco venceu!";
-  }
+  victoryTitle.textContent =
+    winner === "red" ? "🔵 Azul venceu!" : "⚪ Branco venceu!";
 
   victoryReason.textContent = `Motivo: ${reason}`;
   victoryScreen.classList.remove("hidden");
@@ -245,7 +278,6 @@ function endGame(winner, reason) {
 function onSquareClick(e) {
 
   if (!gameStarted) return;
-
   if (myPlayer !== currentPlayer) return;
 
   const sq = e.currentTarget;
@@ -300,8 +332,7 @@ function tryMove(fr, fc, tr, tc) {
     let seqs = mandatorySequences[`${fr},${fc}`];
 
     seqs = seqs.filter(s =>
-      s[0].tr === tr &&
-      s[0].tc === tc
+      s[0].tr === tr && s[0].tc === tc
     );
 
     seqs.forEach(s => s.shift());
@@ -367,7 +398,6 @@ function checkLossByNoMoves() {
           hasMove = true;
           break;
         }
-
       }
     }
 
@@ -382,7 +412,7 @@ function checkLossByNoMoves() {
 }
 
 /* =========================
-   MOVIMENTOS
+   LEGAL MOVES
 ========================= */
 
 function getLegalMoves(r, c) {
@@ -424,7 +454,7 @@ function getLegalMoves(r, c) {
 }
 
 /* =========================
-   MOVES SIMPLES
+   SIMPLE
 ========================= */
 
 function getSimpleMoves(r, c) {
@@ -457,7 +487,6 @@ function getSimpleMoves(r, c) {
           if (board[nr][nc].color === p.color) break;
           if (enemy) break;
           enemy = { r: nr, c: nc };
-
         }
 
         nr += dr;
@@ -502,7 +531,7 @@ function getSimpleMoves(r, c) {
 }
 
 /* =========================
-   LEI DA MAIOR
+   MAIOR CAPTURA
 ========================= */
 
 function updateMandatorySequences() {
@@ -751,6 +780,10 @@ function highlightPlayablePieces() {
     }
 }
 
+/* =========================
+   TEXTO
+========================= */
+
 function updateTurnText() {
 
   if (!turnText) return;
@@ -782,12 +815,11 @@ function applyPlayerNameColors() {
 }
 
 /* =========================
-   FIREBASE GAME
+   SYNC
 ========================= */
 
 window.addEventListener("load", () => {
 
-  startGame();
   applyPlayerNameColors();
 
   const gameRef = ref(db, "games/public");
@@ -799,7 +831,7 @@ window.addEventListener("load", () => {
     if (!data) {
 
       if (myPlayer === "red") {
-        saveGameState();
+        startNewGameAndSave();
       }
 
       return;
@@ -808,10 +840,6 @@ window.addEventListener("load", () => {
     loadGameState(data);
   });
 });
-
-/* =========================
-   SYNC
-========================= */
 
 function serializeBoard() {
 
@@ -882,5 +910,3 @@ function rebuildBoardFromState() {
     }
   }
 }
-</script>
-
