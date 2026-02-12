@@ -1,6 +1,8 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
+let myPlayer = null;
+
 const firebaseConfig = {
   apiKey: "AIzaSyBuz-kqBL6zEQfGWJpKHdm7y73ki8EBpx0",
   authDomain: "rei-do-tabuleiro.firebaseapp.com",
@@ -13,6 +15,24 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
+
+const playerRef = ref(db, "players");
+
+onValue(playerRef, (snap) => {
+
+  const players = snap.val() || {};
+
+  if (!players.red) {
+    myPlayer = "red";
+    set(ref(db, "players/red"), true);
+  } else if (!players.black) {
+    myPlayer = "black";
+    set(ref(db, "players/black"), true);
+  } else {
+    myPlayer = "spectator";
+  }
+
+});
 
 const boardEl = document.getElementById("board");
 const timerRedEl = document.getElementById("timer-red");
@@ -171,7 +191,9 @@ function endGame(winner, reason) {
 ========================= */
 function onSquareClick(e) {
   if (!gameStarted) return;
-
+  
+if (myPlayer !== currentPlayer) return;
+  
   const sq = e.currentTarget;
   const r = +sq.dataset.row;
   const c = +sq.dataset.col;
@@ -655,9 +677,22 @@ function highlightPlayablePieces(){
 }
 
 function updateTurnText() {
+
   if (!turnText) return;
-  turnText.textContent = currentPlayer === "red" ? "SEU TURNO" : "AGUARDE";
+
+  if (myPlayer === "spectator") {
+    turnText.textContent = "ESPECTADOR";
+    return;
+  }
+
+  if (currentPlayer === myPlayer) {
+    turnText.textContent = "SEU TURNO";
+  } else {
+    turnText.textContent = "AGUARDE";
+  }
+
 }
+
 
 function applyPlayerNameColors() {
 
@@ -724,7 +759,12 @@ function saveGameState(){
 
 function loadGameState(data){
 
-  if (!data || !data.board) return;
+  if (!data) {
+  if (myPlayer === "red") {
+    saveGameState();
+  }
+  return;
+}
 
   board = data.board.map(row =>
     row.map(p => {
@@ -780,6 +820,7 @@ function rebuildBoardFromState(){
     }
   }
 }
+
 
 
 
