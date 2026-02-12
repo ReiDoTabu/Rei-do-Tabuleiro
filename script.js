@@ -255,7 +255,6 @@ function formatTime(t) {
   return `${m}:${s}`;
 }
 
-
 /* =========================
    FIM DE JOGO
 ========================= */
@@ -911,4 +910,3 @@ function rebuildBoardFromState() {
     }
   }
 }
-
