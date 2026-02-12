@@ -1,4 +1,19 @@
 const db = firebase.firestore();
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBuz-kqBL6zEQfGWJpKHdm7y73ki8EBpx0",
+  authDomain: "rei-do-tabuleiro.firebaseapp.com",
+  projectId: "rei-do-tabuleiro",
+  storageBucket: "rei-do-tabuleiro.firebasestorage.app",
+  messagingSenderId: "855172254287",
+  appId: "1:855172254287:web:b5c3f56d4e0cc06630f83a",
+  databaseURL: "https://rei-do-tabuleiro-default-rtdb.firebaseio.com"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
 
 const boardEl = document.getElementById("board");
 const timerRedEl = document.getElementById("timer-red");
@@ -247,6 +262,8 @@ function endTurn() {
   startTurnTimer();
   checkLossByNoMoves();
   highlightPlayablePieces();
+   
+saveGameState();
 }
 
 /* =========================
@@ -667,3 +684,84 @@ window.addEventListener("load", () => {
   startGame();
   applyPlayerNameColors();
 });
+function serializeBoard(){
+  return board.map(row =>
+    row.map(p => {
+      if (!p) return null;
+      return {
+        color: p.color,
+        king: p.king
+      };
+    })
+  );
+}
+
+function saveGameState(){
+
+  const data = {
+    board: serializeBoard(),
+    currentPlayer
+  };
+
+  set(ref(db, "games/public"), data);
+}
+
+function loadGameState(data){
+
+  if (!data || !data.board) return;
+
+  board = data.board.map(row =>
+    row.map(p => {
+      if (!p) return null;
+      return {
+        color: p.color,
+        king: p.king
+      };
+    })
+  );
+
+  rebuildBoardFromState();
+  currentPlayer = data.currentPlayer;
+  updateMandatorySequences();
+  updateTurnText();
+  highlightPlayablePieces();
+}
+
+function rebuildBoardFromState(){
+
+  boardEl.innerHTML = "";
+
+  for (let r = 0; r < 8; r++) {
+    for (let c = 0; c < 8; c++) {
+
+      const sq = document.createElement("div");
+      sq.className = "square";
+      sq.dataset.row = r;
+      sq.dataset.col = c;
+
+      if ((r + c) % 2 === 1) {
+
+        sq.classList.add("dark");
+        sq.onclick = onSquareClick;
+
+        const piece = board[r][c];
+
+        if (piece) {
+
+          const el = document.createElement("div");
+          el.className = `piece ${piece.color}`;
+          if (piece.king) el.classList.add("king");
+          sq.appendChild(el);
+          piece.el = el;
+
+        }
+
+      } else {
+        sq.classList.add("light");
+      }
+
+      boardEl.appendChild(sq);
+    }
+  }
+}
+
