@@ -1,3 +1,5 @@
+const db = firebase.firestore();
+
 const boardEl = document.getElementById("board");
 const timerRedEl = document.getElementById("timer-red");
 const timerBlackEl = document.getElementById("timer-black");
@@ -170,7 +172,7 @@ function onSquareClick(e) {
       return;
 
     clearSelection();
-    clearPlayableHighlights();   // <<< NOVO
+    clearPlayableHighlights();
 
     selected = { r, c };
     piece.el.classList.add("selected");
