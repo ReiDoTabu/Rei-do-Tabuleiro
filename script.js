@@ -19,6 +19,7 @@ const firebaseConfig = {
   messagingSenderId: "855172254287",
   appId: "1:855172254287:web:b5c3f56d4e0cc06630f83a",
   databaseURL: "https://rei-do-tabuleiro-default-rtdb.europe-west1.firebasedatabase.app"
+  
 };
 
 const app = initializeApp(firebaseConfig);
@@ -910,4 +911,5 @@ function rebuildBoardFromState() {
     }
   }
 }
+
 
