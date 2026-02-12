@@ -251,9 +251,10 @@ function updateTimers() {
 
 function formatTime(t) {
   const m = String(Math.floor(t / 60)).padStart(2, "0");
-  const s = String(t % 60)).padStart(2, "0");
+  const s = String(t % 60).padStart(2, "0");
   return `${m}:${s}`;
 }
+
 
 /* =========================
    FIM DE JOGO
@@ -910,3 +911,4 @@ function rebuildBoardFromState() {
     }
   }
 }
+
