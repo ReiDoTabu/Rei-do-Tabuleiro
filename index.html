@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Damas</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="game-wrapper">
+
+  <div class="top-panel">
+    <div class="player-box">
+      <div class="avatar"></div>
+      <div class="name player-black">Branco</div>
+      <div class="timer" id="timer-red">03:00</div>
+    </div>
+  </div>
+
+  <div id="board-frame">
+    <div id="board"></div>
+    <div id="countdown" class="countdown"></div>
+  </div>
+
+  <div class="bottom-panel">
+    <div class="player-box">
+      <div class="avatar purple"></div>
+      <div class="name player-red">Azul</div>
+      <div class="timer" id="timer-black">03:00</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- TELA DE VITÓRIA -->
+<div id="victoryScreen" class="victory hidden">
+  <div class="victory-box">
+    <h1 id="victoryTitle"></h1>
+    <p id="victoryReason"></p>
+    <button onclick="startGame()">Jogar novamente</button>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
