@@ -681,9 +681,26 @@ function applyPlayerNameColors() {
 }
 
 window.addEventListener("load", () => {
+
   startGame();
   applyPlayerNameColors();
+
+  const gameRef = ref(db, "games/public");
+
+  onValue(gameRef, (snap) => {
+
+    const data = snap.val();
+
+    if (!data) {
+      saveGameState();
+      return;
+    }
+
+    loadGameState(data);
+
+  });
 });
+
 function serializeBoard(){
   return board.map(row =>
     row.map(p => {
@@ -764,4 +781,5 @@ function rebuildBoardFromState(){
     }
   }
 }
+
 
