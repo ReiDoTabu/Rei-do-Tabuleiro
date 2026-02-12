@@ -861,20 +861,34 @@ function saveGameState() {
 
 function loadGameState(data) {
 
-  if (!data || !data.board) return;
+  if (!data || !Array.isArray(data.board)) return;
+
+  // proteção contra estado quebrado
+  if (data.board.length !== 8) return;
+
+  for (let i = 0; i < 8; i++) {
+    if (!Array.isArray(data.board[i]) || data.board[i].length !== 8) {
+      return;
+    }
+  }
 
   board = data.board.map(row =>
     row.map(p => p ? { color: p.color, king: p.king } : null)
   );
 
   rebuildBoardFromState();
-  currentPlayer = data.currentPlayer;
+
+  currentPlayer = data.currentPlayer || "red";
+
   updateMandatorySequences();
   updateTurnText();
   highlightPlayablePieces();
 }
 
+
 function rebuildBoardFromState() {
+
+  if (!Array.isArray(board) || board.length !== 8) return;
 
   boardEl.innerHTML = "";
 
@@ -911,5 +925,6 @@ function rebuildBoardFromState() {
     }
   }
 }
+
 
 
