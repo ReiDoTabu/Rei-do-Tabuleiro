@@ -1,3 +1,4 @@
+<script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
@@ -16,9 +17,15 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
+/* =========================
+   PLAYER SLOT
+========================= */
+
 const playerRef = ref(db, "players");
 
 onValue(playerRef, (snap) => {
+
+  if (myPlayer) return; // <-- trava para não trocar depois
 
   const players = snap.val() || {};
 
@@ -33,6 +40,10 @@ onValue(playerRef, (snap) => {
   }
 
 });
+
+/* =========================
+   ELEMENTOS
+========================= */
 
 const boardEl = document.getElementById("board");
 const timerRedEl = document.getElementById("timer-red");
@@ -52,8 +63,9 @@ let comboActive = false;
 let mandatorySequences = null;
 
 /* =========================
-   CONTROLE DE TEMPO
+   TEMPO
 ========================= */
+
 let timeRed = 180;
 let timeBlack = 180;
 let timerInterval = null;
@@ -62,7 +74,9 @@ let gameStarted = false;
 /* =========================
    INICIAR JOGO
 ========================= */
+
 function startGame() {
+
   victoryScreen.classList.add("hidden");
 
   board = [];
@@ -81,18 +95,23 @@ function startGame() {
   startCountdown();
 
   for (let r = 0; r < 8; r++) {
+
     const row = [];
+
     for (let c = 0; c < 8; c++) {
+
       const sq = document.createElement("div");
       sq.className = "square";
       sq.dataset.row = r;
       sq.dataset.col = c;
 
       if ((r + c) % 2 === 1) {
+
         sq.classList.add("dark");
         sq.onclick = onSquareClick;
 
         let piece = null;
+
         if (r < 3) piece = { color: "black", king: false };
         if (r > 4) piece = { color: "red", king: false };
 
@@ -102,14 +121,19 @@ function startGame() {
           sq.appendChild(el);
           piece.el = el;
         }
+
         row.push(piece);
+
       } else {
+
         sq.classList.add("light");
         row.push(null);
+
       }
 
       boardEl.appendChild(sq);
     }
+
     board.push(row);
   }
 
@@ -118,42 +142,57 @@ function startGame() {
 }
 
 /* =========================
-   CONTAGEM INICIAL
+   CONTAGEM
 ========================= */
+
 function startCountdown() {
+
   let count = 5;
   countdownEl.textContent = count;
 
   const cd = setInterval(() => {
+
     count--;
     countdownEl.textContent = count;
 
     if (count === 0) {
+
       clearInterval(cd);
       countdownEl.style.display = "none";
       gameStarted = true;
       updateTurnText();
       startTurnTimer();
       highlightPlayablePieces();
+
     }
+
   }, 1000);
 }
 
 /* =========================
-   CRONÔMETRO
+   TIMER
 ========================= */
+
 function startTurnTimer() {
+
   clearInterval(timerInterval);
 
   timerInterval = setInterval(() => {
+
     if (currentPlayer === "red") {
+
       timeRed--;
       if (timeRed <= 0) endGame("black", "tempo esgotado");
+
     } else {
+
       timeBlack--;
       if (timeBlack <= 0) endGame("red", "tempo esgotado");
+
     }
+
     updateTimers();
+
   }, 1000);
 }
 
@@ -171,7 +210,9 @@ function formatTime(t) {
 /* =========================
    FIM DE JOGO
 ========================= */
+
 function endGame(winner, reason) {
+
   clearInterval(timerInterval);
   gameStarted = false;
 
@@ -185,15 +226,16 @@ function endGame(winner, reason) {
   victoryScreen.classList.remove("hidden");
 }
 
-
 /* =========================
    CLIQUE
 ========================= */
+
 function onSquareClick(e) {
+
   if (!gameStarted) return;
-  
-if (myPlayer !== currentPlayer) return;
-  
+
+  if (myPlayer !== currentPlayer) return;
+
   const sq = e.currentTarget;
   const r = +sq.dataset.row;
   const c = +sq.dataset.col;
@@ -224,6 +266,7 @@ if (myPlayer !== currentPlayer) return;
 /* =========================
    MOVIMENTO
 ========================= */
+
 function tryMove(fr, fc, tr, tc) {
 
   const piece = board[fr][fc];
@@ -274,22 +317,26 @@ function tryMove(fr, fc, tr, tc) {
 /* =========================
    TURNO
 ========================= */
+
 function endTurn() {
+
   clearSelection();
   comboActive = false;
   currentPlayer = currentPlayer === "red" ? "black" : "red";
+
   updateMandatorySequences();
   updateTurnText();
   startTurnTimer();
   checkLossByNoMoves();
   highlightPlayablePieces();
-   
-saveGameState();
+
+  saveGameState();
 }
 
 /* =========================
-   VERIFICA DERROTA
+   DERROTA
 ========================= */
+
 function checkLossByNoMoves() {
 
   let hasPiece = false;
@@ -297,15 +344,21 @@ function checkLossByNoMoves() {
 
   for (let r = 0; r < 8; r++) {
     for (let c = 0; c < 8; c++) {
+
       const p = board[r][c];
+
       if (p && p.color === currentPlayer) {
+
         hasPiece = true;
+
         if (getLegalMoves(r, c).length > 0) {
           hasMove = true;
           break;
         }
+
       }
     }
+
     if (hasMove) break;
   }
 
@@ -317,9 +370,11 @@ function checkLossByNoMoves() {
 }
 
 /* =========================
-   MOVIMENTOS LEGAIS
+   MOVIMENTOS
 ========================= */
+
 function getLegalMoves(r, c) {
+
   const p = board[r][c];
   if (!p) return [];
 
@@ -335,10 +390,14 @@ function getLegalMoves(r, c) {
   const used = new Set();
 
   seqs.forEach(s => {
+
     const step = s[0];
     const k = step.tr + "," + step.tc;
+
     if (!used.has(k)) {
+
       used.add(k);
+
       res.push({
         r: step.tr,
         c: step.tc,
@@ -355,6 +414,7 @@ function getLegalMoves(r, c) {
 /* =========================
    MOVES SIMPLES
 ========================= */
+
 function getSimpleMoves(r, c) {
 
   const p = board[r][c];
@@ -399,9 +459,12 @@ function getSimpleMoves(r, c) {
   const dir = p.color === "red" ? -1 : 1;
 
   if (!mustCaptureGlobal) {
+
     for (let dc of dirs) {
+
       const nr = r + dir;
       const nc = c + dc;
+
       if (board[nr]?.[nc] === null)
         moves.push({ r: nr, c: nc, capture: false });
     }
@@ -429,6 +492,7 @@ function getSimpleMoves(r, c) {
 /* =========================
    LEI DA MAIOR
 ========================= */
+
 function updateMandatorySequences() {
 
   const all = [];
@@ -436,6 +500,7 @@ function updateMandatorySequences() {
   for (let r = 0; r < 8; r++)
     for (let c = 0; c < 8; c++)
       if (board[r][c]?.color === currentPlayer) {
+
         const seqs = findAllCaptureSequences(r, c);
         seqs.forEach(s => all.push(s));
       }
@@ -452,9 +517,12 @@ function updateMandatorySequences() {
   mandatorySequences = {};
 
   best.forEach(s => {
+
     const key = `${s.fr},${s.fc}`;
+
     if (!mandatorySequences[key])
       mandatorySequences[key] = [];
+
     mandatorySequences[key].push(
       s.steps.map(x => ({ ...x }))
     );
@@ -464,8 +532,9 @@ function updateMandatorySequences() {
 }
 
 /* =========================
-   BUSCA DE SEQUÊNCIAS
+   BUSCA
 ========================= */
+
 function findAllCaptureSequences(r, c) {
 
   const p = board[r][c];
@@ -486,8 +555,10 @@ function findAllCaptureSequences(r, c) {
     const caps = getCapturesFrom(b, cr, cc, piece, lastDir);
 
     if (caps.length === 0) {
+
       if (path.length)
         results.push([...path]);
+
       return;
     }
 
@@ -501,21 +572,20 @@ function findAllCaptureSequences(r, c) {
       nb[m.mr][m.mc] = null;
 
       let newLast = null;
+
       if (p2.king) {
         newLast = { dr: Math.sign(m.tr - cr), dc: Math.sign(m.tc - cc) };
       }
 
-      dfs(nb, m.tr, m.tc, p2,
-        [...path, m],
-        newLast
-      );
+      dfs(nb, m.tr, m.tc, p2, [...path, m], newLast);
     }
   }
 }
 
 /* =========================
-   CAPTURAS POSSÍVEIS
+   CAPTURAS
 ========================= */
+
 function getCapturesFrom(b, r, c, p, lastDir) {
 
   const res = [];
@@ -537,10 +607,7 @@ function getCapturesFrom(b, r, c, p, lastDir) {
         if (b[nr][nc] === null) {
 
           if (enemy) {
-            res.push({
-              tr: nr, tc: nc,
-              mr: enemy.r, mc: enemy.c
-            });
+            res.push({ tr: nr, tc: nc, mr: enemy.r, mc: enemy.c });
           }
 
         } else {
@@ -548,7 +615,6 @@ function getCapturesFrom(b, r, c, p, lastDir) {
           if (b[nr][nc].color === p.color) break;
           if (enemy) break;
           enemy = { r: nr, c: nc };
-
         }
 
         nr += dr;
@@ -596,31 +662,30 @@ function movePiece(fr, fc, tr, tc) {
 }
 
 function promoteIfNeeded(r, piece) {
+
   if (
     !piece.king &&
     ((piece.color === "red" && r === 0) ||
      (piece.color === "black" && r === 7))
   ) {
+
     piece.king = true;
     piece.el.classList.add("king");
   }
 }
 
 function clearSelection() {
-  document.querySelectorAll(".selected")
-    .forEach(p => p.classList.remove("selected"));
+  document.querySelectorAll(".selected").forEach(p => p.classList.remove("selected"));
   clearHighlights();
   selected = null;
 }
 
 function clearHighlights() {
-  document.querySelectorAll(".highlight")
-    .forEach(s => s.classList.remove("highlight"));
+  document.querySelectorAll(".highlight").forEach(s => s.classList.remove("highlight"));
 }
 
-function clearPlayableHighlights(){
-  document.querySelectorAll(".piece.can-play")
-    .forEach(p => p.classList.remove("can-play"));
+function clearPlayableHighlights() {
+  document.querySelectorAll(".piece.can-play").forEach(p => p.classList.remove("can-play"));
 }
 
 function getSq(r, c) {
@@ -629,51 +694,49 @@ function getSq(r, c) {
 
 function cloneBoard(b) {
   return b.map(row =>
-    row.map(p => {
-      if (!p) return null;
-      return { color: p.color, king: p.king };
-    })
+    row.map(p => p ? { color: p.color, king: p.king } : null)
   );
 }
 
 /* =========================
-   DESTAQUE AUTOMÁTICO
+   DESTAQUES
 ========================= */
-function highlightPlayablePieces(){
+
+function highlightPlayablePieces() {
 
   clearPlayableHighlights();
 
   if (!gameStarted) return;
 
-  if (comboActive && selected){
+  if (comboActive && selected) {
+
     const p = board[selected.r][selected.c];
     if (p && p.el) p.el.classList.add("can-play");
     return;
   }
 
-  if (mandatorySequences){
+  if (mandatorySequences) {
 
-    for (const key in mandatorySequences){
-      const [r,c] = key.split(",").map(Number);
+    for (const key in mandatorySequences) {
+
+      const [r, c] = key.split(",").map(Number);
       const p = board[r][c];
-      if (p && p.el){
-        p.el.classList.add("can-play");
-      }
+
+      if (p && p.el) p.el.classList.add("can-play");
     }
 
     return;
   }
 
-  for (let r=0;r<8;r++){
-    for (let c=0;c<8;c++){
+  for (let r = 0; r < 8; r++)
+    for (let c = 0; c < 8; c++) {
+
       const p = board[r][c];
-      if (p && p.color === currentPlayer){
-        if (getLegalMoves(r,c).length > 0){
-          p.el.classList.add("can-play");
-        }
+
+      if (p && p.color === currentPlayer && getLegalMoves(r, c).length > 0) {
+        p.el.classList.add("can-play");
       }
     }
-  }
 }
 
 function updateTurnText() {
@@ -690,9 +753,7 @@ function updateTurnText() {
   } else {
     turnText.textContent = "AGUARDE";
   }
-
 }
-
 
 function applyPlayerNameColors() {
 
@@ -703,16 +764,14 @@ function applyPlayerNameColors() {
     const name = box.querySelector(".name");
     if (!name) return;
 
-    if (box.closest(".top-panel")) {
-      name.style.color = "#e6e6e6";
-    }
-
-    if (box.closest(".bottom-panel")) {
-      name.style.color = "#3fa9ff";
-    }
-
+    if (box.closest(".top-panel")) name.style.color = "#e6e6e6";
+    if (box.closest(".bottom-panel")) name.style.color = "#3fa9ff";
   });
 }
+
+/* =========================
+   FIREBASE GAME
+========================= */
 
 window.addEventListener("load", () => {
 
@@ -726,28 +785,30 @@ window.addEventListener("load", () => {
     const data = snap.val();
 
     if (!data) {
-      saveGameState();
+
+      if (myPlayer === "red") {
+        saveGameState();
+      }
+
       return;
     }
 
     loadGameState(data);
-
   });
 });
 
-function serializeBoard(){
+/* =========================
+   SYNC
+========================= */
+
+function serializeBoard() {
+
   return board.map(row =>
-    row.map(p => {
-      if (!p) return null;
-      return {
-        color: p.color,
-        king: p.king
-      };
-    })
+    row.map(p => p ? { color: p.color, king: p.king } : null)
   );
 }
 
-function saveGameState(){
+function saveGameState() {
 
   const data = {
     board: serializeBoard(),
@@ -757,23 +818,12 @@ function saveGameState(){
   set(ref(db, "games/public"), data);
 }
 
-function loadGameState(data){
+function loadGameState(data) {
 
-  if (!data) {
-  if (myPlayer === "red") {
-    saveGameState();
-  }
-  return;
-}
+  if (!data || !data.board) return;
 
   board = data.board.map(row =>
-    row.map(p => {
-      if (!p) return null;
-      return {
-        color: p.color,
-        king: p.king
-      };
-    })
+    row.map(p => p ? { color: p.color, king: p.king } : null)
   );
 
   rebuildBoardFromState();
@@ -783,7 +833,7 @@ function loadGameState(data){
   highlightPlayablePieces();
 }
 
-function rebuildBoardFromState(){
+function rebuildBoardFromState() {
 
   boardEl.innerHTML = "";
 
@@ -807,9 +857,9 @@ function rebuildBoardFromState(){
           const el = document.createElement("div");
           el.className = `piece ${piece.color}`;
           if (piece.king) el.classList.add("king");
+
           sq.appendChild(el);
           piece.el = el;
-
         }
 
       } else {
@@ -820,8 +870,4 @@ function rebuildBoardFromState(){
     }
   }
 }
-
-
-
-
-
+</script>
