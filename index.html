@@ -13,7 +13,7 @@
     <div class="player-box">
       <div class="avatar"></div>
       <div class="name player-black">Branco</div>
-      <div class="timer" id="timer-red">03:00</div>
+      <div class="timer" id="timer-black">03:00</div>
     </div>
   </div>
 
@@ -26,7 +26,7 @@
     <div class="player-box">
       <div class="avatar purple"></div>
       <div class="name player-red">Azul</div>
-      <div class="timer" id="timer-black">03:00</div>
+      <div class="timer" id="timer-red">03:00</div>
     </div>
   </div>
 
@@ -37,30 +37,10 @@
   <div class="victory-box">
     <h1 id="victoryTitle"></h1>
     <p id="victoryReason"></p>
-    <button onclick="startGame()">Jogar novamente</button>
+    <button id="restartBtn">Jogar novamente</button>
   </div>
 </div>
-
-
-<!-- Firebase (compat – correto para GitHub Pages) -->
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyBuz-kqBL6zEQfGWJpKHdm7y73ki8EBpx0",
-    authDomain: "rei-do-tabuleiro.firebaseapp.com",
-    projectId: "rei-do-tabuleiro",
-    storageBucket: "rei-do-tabuleiro.firebasestorage.app",
-    messagingSenderId: "855172254287",
-    appId: "1:855172254287:web:b5c3f56d4e0cc06630f83a"
-  };
-
-  firebase.initializeApp(firebaseConfig);
-</script>
 
 <script type="module" src="script.js"></script>
 </body>
 </html>
-
-
