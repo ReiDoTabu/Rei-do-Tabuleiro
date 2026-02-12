@@ -1,6 +1,6 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+import { getDatabase, ref, set, onValue, onDisconnect } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
 let myPlayer = null;
 
@@ -25,18 +25,30 @@ const playerRef = ref(db, "players");
 
 onValue(playerRef, (snap) => {
 
-  if (myPlayer) return; // <-- trava para não trocar depois
+  if (myPlayer) return;
 
   const players = snap.val() || {};
 
   if (!players.red) {
+
     myPlayer = "red";
-    set(ref(db, "players/red"), true);
+
+    const myRef = ref(db, "players/red");
+    set(myRef, true);
+    onDisconnect(myRef).remove();
+
   } else if (!players.black) {
+
     myPlayer = "black";
-    set(ref(db, "players/black"), true);
+
+    const myRef = ref(db, "players/black");
+    set(myRef, true);
+    onDisconnect(myRef).remove();
+
   } else {
+
     myPlayer = "spectator";
+
   }
 
 });
@@ -871,3 +883,4 @@ function rebuildBoardFromState() {
   }
 }
 </script>
+
